@@ -56,6 +56,13 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
 
 	return newGrid;
 }
+// OMUHI: Implementation of modulo adapted from:
+// https://stackoverflow.com/questions/12276675/modulus-with-negative-numbers-in-c
+int mod(int a, int b)
+{
+    return (a%b+b)%b;
+}
+// https://stackoverflow.com/questions/12276675/modulus-with-negative-numbers-in-c
 
 /**
 	TODO - implement this function.
@@ -92,9 +99,42 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
 */
 vector < vector <float> > blur(vector < vector < float> > grid, float blurring) {
 
-	vector < vector <float> > newGrid;
+	vector < vector <float> > newGrid(grid.size(), vector <float>(grid[0].size(),0.0));
 
 	// your code here
+	int height = grid.size();
+	int width = grid[0].size();
+	float centerProb = 1.0 - blurring;
+	float adjacentProb = blurring/6.0;
+	float cornerProb = blurring/12.0;
+
+	// create the blurring window
+	vector < vector <float> > window {  {cornerProb, adjacentProb, cornerProb},
+                                      {adjacentProb, centerProb, adjacentProb},
+                                      {cornerProb, adjacentProb, cornerProb}};
+	int i;
+	int j;
+	int newI;
+	int newJ;
+	int dx;
+	int dy;
+	float gridVal;
+	float mult;
+
+	// main looping structure to compute the blurred grid
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			gridVal = grid[i][j];
+			for (dx = -1; dx < 2; dx++) {
+				for (dy = -1; dy < 2; dy++) {
+					mult = window[dx+1][dy+1];
+					newI = mod((i + dy), height);
+					newJ = mod((j + dx), width);
+					newGrid[newI][newJ] += mult * gridVal;
+				}
+			}
+		}
+	}
 
 	return normalize(newGrid);
 }
